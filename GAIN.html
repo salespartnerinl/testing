@@ -197,17 +197,17 @@
                     </div>
                     <div class="form-group">
                         <label>Insured Person Age * (0 to 55)</label>
-                        <input type="number" id="age" placeholder="Enter age" required min="0" max="55" oninput="validateAge(); validateMaturityAge();">
+                        <input type="number" id="age" placeholder="Enter age" required min="0" max="55" oninput="validateAge(); validatePolicyTerms();">
                         <small id="age-error" class="input-error-msg" style="color: red; display: none; font-size: 0.8rem; margin-top: 5px; font-weight: 500;">Maximum age allowed is 55</small>
                     </div>
                     <div class="form-group">
                         <label>Premium Paying Capacity (Annual) *</label>
-                        <input type="number" id="premium" placeholder="Min ₹ 1,10,000" required min="110000" oninput="validatePremium()">
+                        <input type="number" id="premium" placeholder="Min ₹ 1,10,000" required min="110000" oninput="validatePremium(); validatePolicyTerms();">
                         <small id="premium-error" class="input-error-msg" style="color: red; display: none; font-size: 0.8rem; margin-top: 5px; font-weight: 500;">Minimum premium allowed is ₹ 1,10,000</small>
                     </div>
                     <div class="form-group">
                         <label>Premium Paying Term (PPT) *</label>
-                        <select id="ppt" required>
+                        <select id="ppt" required onchange="validatePolicyTerms()">
                             <option value="5">5 Years</option>
                             <option value="6">6 Years</option>
                             <option value="7">7 Years</option>
@@ -378,9 +378,15 @@
     </div>
 
     <script>
-        const INSTA_CASH_MULTIPLIER = 0.50;
-        const MATURITY_MULTIPLIER = 1.05;
-        const REGULAR_RATE_OFFSET = 4.00; 
+        // Centralized Business Rules
+        const BIZ_RULES = {
+            MIN_PREMIUM: 110000,
+            MAX_ENTRY_AGE: 55,
+            MAX_MATURITY_AGE: 85,
+            INSTA_CASH_MULTIPLIER: 0.50,
+            MATURITY_MULTIPLIER: 1.05,
+            REGULAR_RATE_OFFSET: 4.00
+        };
 
         // NOTE: Truncated fallback for brevity. Paste your full production `rates` object here.
         const rates = {
@@ -574,7 +580,7 @@
         function validateAge() {
             const ageInput = document.getElementById('age');
             const errorText = document.getElementById('age-error');
-            if (parseInt(ageInput.value) > 55 || parseInt(ageInput.value) < 0) { 
+            if (parseInt(ageInput.value) > BIZ_RULES.MAX_ENTRY_AGE || parseInt(ageInput.value) < 0) { 
                 ageInput.classList.add('input-error'); 
                 errorText.style.display = 'block'; 
             } else { 
@@ -586,8 +592,7 @@
         function validatePremium() {
             const premiumInput = document.getElementById('premium');
             const errorText = document.getElementById('premium-error');
-            // Updated to 110000
-            if (parseInt(premiumInput.value) < 110000) { 
+            if (parseInt(premiumInput.value) < BIZ_RULES.MIN_PREMIUM) { 
                 premiumInput.classList.add('input-error'); 
                 errorText.style.display = 'block'; 
             } else { 
@@ -596,33 +601,78 @@
             }
         }
 
-        function validateMaturityAge() {
+        /**
+         * Dynamically validates and disables Policy Term (PT) options based on:
+         * 1. Maximum Maturity Age (85)
+         * 2. PPT must be strictly less than PT
+         * 3. The exact combination existing in the rate matrix (not null)
+         */
+        function validatePolicyTerms() {
             const ageInput = document.getElementById('age').value;
-            const age = parseInt(ageInput) || 0;
+            const premiumInput = document.getElementById('premium').value;
+            const age = parseInt(ageInput);
+            const premium = parseInt(premiumInput) || BIZ_RULES.MIN_PREMIUM; 
+            const ppt = parseInt(document.getElementById('ppt').value);
             const ptSelect = document.getElementById('pt');
+            
+            if (isNaN(age) || age < 0 || age > BIZ_RULES.MAX_ENTRY_AGE) return;
+
+            let activeBand = 'band1';
+            if (premium >= 500000) activeBand = 'band3';
+            else if (premium >= 200000) activeBand = 'band2';
+
             let validOptionFound = false;
 
             for (let i = 0; i < ptSelect.options.length; i++) {
-                const ptValue = parseInt(ptSelect.options[i].value);
-                if (age + ptValue > 85) {
+                const pt = parseInt(ptSelect.options[i].value);
+                let isCombinationValid = true;
+
+                if (age + pt > BIZ_RULES.MAX_MATURITY_AGE) {
+                    isCombinationValid = false;
+                }
+                else if (ppt >= pt) {
+                    isCombinationValid = false;
+                }
+                else if (
+                    !rates[activeBand] || 
+                    !rates[activeBand][ppt] || 
+                    !rates[activeBand][ppt][pt] || 
+                    rates[activeBand][ppt][pt].early[age] === null || 
+                    rates[activeBand][ppt][pt].early[age] === undefined
+                ) {
+                    isCombinationValid = false;
+                }
+
+                if (!isCombinationValid) {
                     ptSelect.options[i].disabled = true;
-                    ptSelect.options[i].style.color = "#ccc";
+                    ptSelect.options[i].style.color = "#cccccc";
+                    ptSelect.options[i].style.backgroundColor = "#f9f9f9";
                 } else {
                     ptSelect.options[i].disabled = false;
-                    ptSelect.options[i].style.color = "#333";
+                    ptSelect.options[i].style.color = "#333333";
+                    ptSelect.options[i].style.backgroundColor = "#ffffff";
                     validOptionFound = true;
                 }
             }
 
-            if (ptSelect.options[ptSelect.selectedIndex].disabled) {
+            // Auto-correction fallback
+            if (ptSelect.options[ptSelect.selectedIndex] && ptSelect.options[ptSelect.selectedIndex].disabled) {
+                let fallbackSelected = false;
                 for (let i = ptSelect.options.length - 1; i >= 0; i--) {
                     if (!ptSelect.options[i].disabled) {
                         ptSelect.selectedIndex = i;
+                        fallbackSelected = true;
                         break;
                     }
                 }
+                if (!fallbackSelected) ptSelect.selectedIndex = -1;
             }
         }
+
+        // Run validation on load
+        window.addEventListener('DOMContentLoaded', () => {
+            validatePolicyTerms();
+        });
 
         function calculateQuote(event) {
             event.preventDefault();
@@ -635,30 +685,31 @@
             const pt = parseInt(document.getElementById('pt').value);
 
             const maturityAge = age + pt;
-            if (maturityAge > 85) {
-                alert(`Maximum Maturity Age is 85. With an entry age of ${age}, the maximum Policy Term allowed is ${85 - age} years.`);
+            if (maturityAge > BIZ_RULES.MAX_MATURITY_AGE) {
+                alert(`Maximum Maturity Age is ${BIZ_RULES.MAX_MATURITY_AGE}. With an entry age of ${age}, the maximum Policy Term allowed is ${BIZ_RULES.MAX_MATURITY_AGE - age} years.`);
                 return;
             }
 
-            if (age < 0 || age > 55 || isNaN(age)) { validateAge(); return; }
-            
-            // Updated to 110000
-            if (premium < 110000 || isNaN(premium)) { validatePremium(); return; }
-            
+            if (age < 0 || age > BIZ_RULES.MAX_ENTRY_AGE || isNaN(age)) { validateAge(); return; }
+            if (premium < BIZ_RULES.MIN_PREMIUM || isNaN(premium)) { validatePremium(); return; }
             if (ppt >= pt) { alert("Premium Paying Term (PPT) must be strictly less than the Policy Term (PT)."); return; }
 
             let activeBand = premium >= 500000 ? 'band3' : (premium >= 200000 ? 'band2' : 'band1');
 
             if (!rates[activeBand] || !rates[activeBand][ppt] || !rates[activeBand][ppt][pt]) {
-                rates[activeBand] = { [ppt]: { [pt]: { early: new Array(56).fill(35.00) } } };
+                alert("This specific combination of PPT and PT is not valid in the rate engine."); return;
             }
 
             let earlyPercentage = rates[activeBand][ppt][pt].early[age];
-            let regularPercentage = earlyPercentage - REGULAR_RATE_OFFSET; 
+            if (earlyPercentage === null || earlyPercentage === undefined) {
+                alert("This specific Age, PPT, and PT combination is not available (NA)."); return;
+            }
+
+            let regularPercentage = earlyPercentage - BIZ_RULES.REGULAR_RATE_OFFSET; 
 
             const totalPay = premium * ppt; 
-            const instaCash = premium * INSTA_CASH_MULTIPLIER; 
-            const maturityBenefit = totalPay * MATURITY_MULTIPLIER; 
+            const instaCash = premium * BIZ_RULES.INSTA_CASH_MULTIPLIER; 
+            const maturityBenefit = totalPay * BIZ_RULES.MATURITY_MULTIPLIER; 
             
             const yearlyEarlyIncome = premium * (earlyPercentage / 100);
             const yearlyRegularIncome = premium * (regularPercentage / 100);
@@ -695,7 +746,7 @@
             }
             document.getElementById('ui-cashflow-table').innerHTML = tableHTMLUI + '</tbody>';
 
-            // 2. UPDATE THE NEW PDF MASTER CONTAINER
+            // 2. UPDATE PDF CONTAINER
             document.getElementById('pdf-doc-name').innerText = displayName;
             document.getElementById('pdf-doc-age').innerText = `${age} Yrs`;
             document.getElementById('pdf-doc-premium').innerText = formatter.format(premium);
@@ -767,102 +818,87 @@
             resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // 3. GENERATE PDF FUNCTION 
-        function generatePDF() {
-            const overlay = document.getElementById('pdf-overlay');
-            const elementWrapper = document.getElementById('pdf-export-container');
+        // DRY PDF Generator Utility
+        async function createDocumentBlob(filename) {
             const element = document.getElementById('pdf-content');
-            
-            overlay.style.display = 'block';
-            window.scrollTo(0, 0);
-            elementWrapper.style.display = 'flex';
-            elementWrapper.style.justifyContent = 'center';
-            elementWrapper.style.position = 'fixed';
-            elementWrapper.style.top = '0';
-            elementWrapper.style.left = '0';
-            elementWrapper.style.width = '100vw';
-            elementWrapper.style.height = '100vh';
-            elementWrapper.style.zIndex = '9998'; 
-            elementWrapper.style.overflow = 'hidden';
-
-            const rawName = document.getElementById('custName').value.trim();
-            const fileNameString = rawName !== "" ? rawName.replace(/\s+/g, '_') : "Quote";
-
-            setTimeout(() => {
-                const opt = {
-                    margin:       0,
-                    filename:     `INL_Gain_Final_Illustration_${fileNameString}.pdf`,
-                    image:        { type: 'jpeg', quality: 1 },
-                    html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, width: 794, height: 1122 }, 
-                    jsPDF: { unit: 'px', format: [794, 1122], orientation: 'portrait' } 
-                };
-
-                html2pdf().set(opt).from(element).save().then(() => {
-                    elementWrapper.style.display = 'none';
-                    overlay.style.display = 'none';
-                }).catch(err => {
-                    console.error("PDF Error: ", err);
-                    alert("Error generating PDF. Please try again.");
-                    elementWrapper.style.display = 'none';
-                    overlay.style.display = 'none';
-                });
-            }, 500); 
+            const opt = {
+                margin:       0,
+                filename:     filename,
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, width: 794, height: 1122 }, 
+                jsPDF:        { unit: 'px', format: [794, 1122], orientation: 'portrait' } 
+            };
+            return await html2pdf().set(opt).from(element).outputPdf('blob');
         }
 
-        // 4. ADVANCED WHATSAPP SHARE
-        function shareWhatsApp() {
-            const text = `🌟 *IndusInd Nippon Life - Gain Insta Income* 🌟\n\nHello! 👋 Here is the summary of your personalized illustration:\n\n👤 *Age:* ${currentQuoteData.age} Yrs\n💰 *Annual Premium:* ${currentQuoteData.premium}\n🗓️ *Premium Paying Term:* ${currentQuoteData.ppt} Yrs\n⏳ *Policy Term:* ${currentQuoteData.pt} Yrs\n\n✨ _Income starts right from the 7th day of your policy issuance!_ ✨\n\n🚀 *Insta Income:* ${currentQuoteData.instaCash}\n💸 *Early Income:* ${currentQuoteData.earlyIncome}\n📈 *Regular Income:* ${currentQuoteData.regularIncome}\n🎯 *Maturity Amount:* ${currentQuoteData.maturityAmount}\n\n━━━━━━━━━━━━━━━━━━\n🤝 *YOU PAY:* ${currentQuoteData.totalPay}\n🎁 *YOU GET:* ${currentQuoteData.totalGet}\n━━━━━━━━━━━━━━━━━━\n\nPlease feel free to reach out for further details or any questions! 📞`;
-
+        function toggleOverlay(show) {
             const overlay = document.getElementById('pdf-overlay');
-            const elementWrapper = document.getElementById('pdf-export-container');
-            const element = document.getElementById('pdf-content');
-            
-            overlay.style.display = 'block';
-            window.scrollTo(0, 0);
-            elementWrapper.style.display = 'flex';
-            elementWrapper.style.justifyContent = 'center';
-            elementWrapper.style.position = 'fixed';
-            elementWrapper.style.top = '0';
-            elementWrapper.style.left = '0';
-            elementWrapper.style.width = '100vw';
-            elementWrapper.style.height = '100vh';
-            elementWrapper.style.zIndex = '9998'; 
-            elementWrapper.style.overflow = 'hidden';
+            const wrapper = document.getElementById('pdf-export-container');
+            if (show) {
+                overlay.style.display = 'block';
+                window.scrollTo(0, 0);
+                wrapper.style.display = 'flex';
+                wrapper.style.justifyContent = 'center';
+                wrapper.style.position = 'fixed';
+                wrapper.style.top = '0';
+                wrapper.style.left = '0';
+                wrapper.style.width = '100vw';
+                wrapper.style.height = '100vh';
+                wrapper.style.zIndex = '9998'; 
+                wrapper.style.overflow = 'hidden';
+            } else {
+                overlay.style.display = 'none';
+                wrapper.style.display = 'none';
+            }
+        }
 
+        function generatePDF() {
+            toggleOverlay(true);
             const rawName = document.getElementById('custName').value.trim();
             const fileNameString = rawName !== "" ? rawName.replace(/\s+/g, '_') : "Quote";
             const filename = `INL_Gain_Final_Illustration_${fileNameString}.pdf`;
 
             setTimeout(() => {
-                const opt = {
-                    margin:       0,
-                    filename:     filename,
-                    image:        { type: 'jpeg', quality: 1 },
-                    html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, width: 794, height: 1122 }, 
-                    jsPDF: { unit: 'px', format: [794, 1122], orientation: 'portrait' } 
-                };
+                createDocumentBlob(filename).then(blob => {
+                    toggleOverlay(false);
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                }).catch(err => {
+                    console.error("PDF Error: ", err);
+                    alert("Error generating PDF. Please try again.");
+                    toggleOverlay(false);
+                });
+            }, 500); 
+        }
 
-                html2pdf().set(opt).from(element).outputPdf('blob').then(function (pdfBlob) {
-                    elementWrapper.style.display = 'none';
-                    overlay.style.display = 'none';
+        function shareWhatsApp() {
+            const text = `🌟 *IndusInd Nippon Life - Gain Insta Income* 🌟\n\nHello! 👋 Here is the summary of your personalized illustration:\n\n👤 *Age:* ${currentQuoteData.age} Yrs\n💰 *Annual Premium:* ${currentQuoteData.premium}\n🗓️ *Premium Paying Term:* ${currentQuoteData.ppt} Yrs\n⏳ *Policy Term:* ${currentQuoteData.pt} Yrs\n\n✨ _Income starts right from the 7th day of your policy issuance!_ ✨\n\n🚀 *Insta Income:* ${currentQuoteData.instaCash}\n💸 *Early Income:* ${currentQuoteData.earlyIncome}\n📈 *Regular Income:* ${currentQuoteData.regularIncome}\n🎯 *Maturity Amount:* ${currentQuoteData.maturityAmount}\n\n━━━━━━━━━━━━━━━━━━\n🤝 *YOU PAY:* ${currentQuoteData.totalPay}\n🎁 *YOU GET:* ${currentQuoteData.totalGet}\n━━━━━━━━━━━━━━━━━━\n\nPlease feel free to reach out for further details or any questions! 📞`;
 
-                    const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+            toggleOverlay(true);
+            const rawName = document.getElementById('custName').value.trim();
+            const fileNameString = rawName !== "" ? rawName.replace(/\s+/g, '_') : "Quote";
+            const filename = `INL_Gain_Final_Illustration_${fileNameString}.pdf`;
+
+            setTimeout(() => {
+                createDocumentBlob(filename).then(blob => {
+                    toggleOverlay(false);
+                    const file = new File([blob], filename, { type: 'application/pdf' });
 
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         navigator.share({
                             title: 'Gain Illustration',
                             text: text,
                             files: [file]
-                        }).catch(err => {
-                            console.log("User cancelled share or error:", err);
-                        });
+                        }).catch(err => console.log("User cancelled share or error:", err));
                     } else {
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                     }
                 }).catch(err => {
                     console.error("PDF Generation Error: ", err);
-                    elementWrapper.style.display = 'none';
-                    overlay.style.display = 'none';
+                    toggleOverlay(false);
                     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                 });
             }, 500);
