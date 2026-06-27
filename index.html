@@ -48,7 +48,7 @@
 
         a { color: var(--primary-maroon); text-decoration: none; font-weight: 500; }
         a:hover { text-decoration: underline; }
-        h2:focus { outline: none; } /* Prevents ugly focus ring on programmatic focus */
+        h2:focus { outline: none; } 
 
         /* --- Animations --- */
         @keyframes fadeSlideUp { 
@@ -68,6 +68,25 @@
         .view-section.active { 
             display: block; 
             animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        }
+
+        /* Specialized full-screen view for the calculators */
+        #view-calculator {
+            padding: 70px 0 0 0; /* Only clear the header */
+            max-width: 100%;
+            height: 100vh; 
+            display: none;
+            flex-direction: column;
+            background-color: var(--white);
+        }
+        #view-calculator.active {
+            display: flex;
+            animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        #calculatorFrame {
+            flex: 1;
+            width: 100%;
+            border: none;
         }
 
         /* --- Navbar --- */
@@ -242,15 +261,15 @@
             letter-spacing: 0.3px; 
         }
 
-        /* --- Custom Product Card --- */
+        /* --- Custom Product Card (Clean Title Format) --- */
         .product-grid {
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); 
-            gap: 30px; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 24px; 
             justify-content: center;
         }
         .custom-product-card {
-            background: var(--white);
+            background-color: var(--image-bg-pink);
             border-radius: 15px;
             box-shadow: var(--shadow-md);
             cursor: pointer;
@@ -261,72 +280,37 @@
             display: flex;
             flex-direction: column;
             text-decoration: none; 
+            min-height: 140px; 
+            outline: none; /* For accessibility focus */
         }
-        .custom-product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+        .custom-product-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+        .custom-product-card:active { transform: translateY(-2px); }
         
         .custom-badge {
             position: absolute;
             top: 0;
             right: 0;
-            background: var(--image-red);
             color: var(--white);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
-            padding: 8px 18px;
-            border-bottom-left-radius: 20px;
+            padding: 8px 16px;
+            border-radius: 0 15px 0 20px; 
             z-index: 2;
         }
 
         .card-top-section {
-            background-color: var(--image-bg-pink);
-            padding: 50px 30px 40px;
-            text-align: left;
-        }
-        .card-top-section h2 {
-            font-size: 1.7rem;
-            color: #9e2a2b; 
-            line-height: 1.2;
-            margin-bottom: 12px;
-            font-weight: 700;
-        }
-        .card-top-section p {
-            font-size: 0.95rem;
-            color: #444;
-            line-height: 1.5;
-            margin: 0;
-        }
-        
-        .card-bottom-section {
-            background-color: var(--white);
-            padding: 40px 30px 30px;
+            padding: 55px 25px 30px; 
             text-align: left;
             flex: 1;
-        }
-        .card-bottom-section h4 {
-            font-size: 0.95rem;
-            color: #777;
-            font-weight: 500;
-            margin-bottom: 20px;
-        }
-        .benefits-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .benefits-list li {
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 16px;
-            font-size: 1rem;
-            color: #333;
-            font-weight: 500;
-            line-height: 1.4;
+            align-items: center; 
         }
-        .benefits-list li i {
-            color: var(--image-red);
-            font-size: 1.3rem;
-            margin-top: 2px;
+        .card-top-section h2 {
+            font-size: 1.55rem; 
+            color: var(--primary-maroon);
+            line-height: 1.25;
+            margin: 0; 
+            font-weight: 700;
         }
 
         /* --- Claims & Support Components --- */
@@ -573,33 +557,27 @@
             <p class="section-subtitle">Select a plan to generate a customized client quote</p>
             
             <div class="product-grid">
-                <a href="GAIN.html" class="custom-product-card">
-                    <div class="custom-badge">Guaranteed Income Every Year</div>
-                    
+                <!-- Guaranteed Advantage Income Plan -->
+                <div onclick="openCalculator('GAIN.html')" class="custom-product-card" role="button" tabindex="0">
+                    <div class="custom-badge" style="background-color: var(--image-red);">Guaranteed Income Every Year</div>
                     <div class="card-top-section">
                         <h2>INL Guaranteed<br>Advantage Income Plan</h2>
-                        <p>A plan that provides you a Guaranteed Income every year throughout the policy term—offering a reliable financial support.</p>
                     </div>
+                </div>
 
-                    <div class="card-bottom-section">
-                        <h4>Key Benefits</h4>
-                        <ul class="benefits-list">
-                            <li>
-                                <i class="fa-solid fa-circle-check"></i>
-                                <span>Income starts from 1st Year of policy term</span>
-                            </li>
-                            <li>
-                                <i class="fa-solid fa-circle-check"></i>
-                                <span>Option to Get back 50% of your Annualised Premium</span>
-                            </li>
-                            <li>
-                                <i class="fa-solid fa-circle-check"></i>
-                                <span>Lump-sum payout at maturity</span>
-                            </li>
-                        </ul>
+                <!-- Nishchit Pension Plan -->
+                <div onclick="openCalculator('NishchitPension.html')" class="custom-product-card" role="button" tabindex="0">
+                    <div class="custom-badge" style="background-color: #bd3939;">Retire without worries</div>
+                    <div class="card-top-section">
+                        <h2>INL Nishchit Pension</h2>
                     </div>
-                </a>
+                </div>
             </div>
+        </section>
+
+        <!-- New Dedicated View for Rendering Calculators -->
+        <section id="view-calculator" class="view-section">
+            <iframe id="calculatorFrame" title="Product Calculator"></iframe>
         </section>
 
         <section id="view-forms" class="view-section">
@@ -753,7 +731,7 @@
         </section>
     </main>
 
-    <footer>
+    <footer id="mainFooter">
         <p>&copy; 2026 Sales Partner Portal. IndusInd Nippon Life Insurance.</p>
     </footer>
 
@@ -781,6 +759,10 @@
                 }
             }
 
+            // Hide the footer dynamically when viewing the full-screen calculator
+            const footer = document.getElementById('mainFooter');
+            footer.style.display = (viewId === 'view-calculator') ? 'none' : 'block';
+
             const backBtn = document.getElementById('backBtn');
             backBtn.style.display = (viewId === 'view-home') ? 'none' : 'block';
             
@@ -799,33 +781,38 @@
             }
         }
 
+        // --- NEW CALCULATOR LOADER ---
+        function openCalculator(fileUrl) {
+            const frame = document.getElementById('calculatorFrame');
+            // Check if it's already loaded to prevent unnecessary reloads, otherwise update src
+            if (!frame.src.includes(fileUrl)) {
+                frame.src = fileUrl;
+            }
+            navigateTo('view-calculator');
+        }
+
         async function shareFileWhatsApp(fileName, fileTitle) {
-            // The exact message format
             const message = `Dear Sir/Madam,\n\nPlease find enclosed the *${fileTitle}* pertaining to your policy requirements.\n\nKindly complete the needful action.\n\nFor any queries, I am available to assist you.`;
 
-            // 1. Try the modern Web Share API (Works best on mobile devices)
             if (navigator.canShare && navigator.share) {
                 try {
-                    // Fetch the file and convert it to a file object
                     const response = await fetch(fileName);
                     const blob = await response.blob();
                     const file = new File([blob], fileName, { type: 'application/pdf' });
 
-                    // Check if the device allows sharing this file type
                     if (navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             files: [file],
                             title: fileTitle,
                             text: message
                         });
-                        return; // Success! Exit the function.
+                        return;
                     }
                 } catch (error) {
                     console.log('Web Share API failed or was cancelled, falling back to link sharing.', error);
                 }
             }
 
-            // 2. Fallback for Desktop Web or unsupported browsers
             const fileUrl = new URL(fileName, window.location.href).href;
             const fallbackMessage = `${message}\n\nDocument Link: ${fileUrl}`;
             
