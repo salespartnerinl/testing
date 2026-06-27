@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Partner Portal | IndusInd Nippon Life</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- CSS Variables & Theme --- */
+        :root {
+            --primary-maroon: #7a1f26; 
+            --dark-maroon: #5b171c; 
+            --light-maroon: #fcebeb;
+            --image-red: #d32f2f; 
+            --image-bg-pink: #fdf5f5; 
+            --gold: #cfa85c;
+            --white: #ffffff;
+            --light-gray: #f4f6f8;
+            --border-color: #e9ecef;
+            --text-dark: #2b2b2b;
+            --text-muted: #6c757d;
+            --transition-speed: 0.3s;
+            --shadow-sm: 0 4px 6px rgba(0,0,0,0.04);
+            --shadow-md: 0 10px 20px rgba(0,0,0,0.06);
+            --shadow-lg: 0 20px 40px rgba(122, 31, 38, 0.08);
+            --radius-md: 12px;
+            --radius-lg: 20px;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Poppins', sans-serif; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body { 
+            background-color: var(--light-gray); 
+            color: var(--text-dark); 
+            overflow-x: hidden; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        a { color: var(--primary-maroon); text-decoration: none; font-weight: 500; }
+        a:hover { text-decoration: underline; }
+        h2:focus { outline: none; } /* Prevents ugly focus ring on programmatic focus */
+
+        /* --- Animations --- */
+        @keyframes fadeSlideUp { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* --- Layout & View Controller --- */
+        .view-section { 
+            display: none; 
+            flex: 1; 
+            padding: 90px 20px 60px; 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            width: 100%; 
+        }
+        .view-section.active { 
+            display: block; 
+            animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        }
+
+        /* --- Navbar --- */
+        header { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            position: fixed; 
+            width: 100%; 
+            top: 0; 
+            z-index: 1000; 
+            transition: all var(--transition-speed);
+        }
+        .nav-container { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 14px 24px; 
+            position: relative; 
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .back-btn { 
+            position: absolute; 
+            left: 24px; 
+            color: var(--primary-maroon); 
+            font-size: 1.3rem; 
+            cursor: pointer; 
+            display: none; 
+            background: none; 
+            border: none; 
+            transition: transform 0.2s;
+        }
+        .back-btn:hover { transform: translateX(-4px); }
+        
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+        }
+        .logo-container .logo { 
+            font-size: 1.45rem; 
+            font-weight: 700; 
+            color: var(--primary-maroon); 
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+        .logo-container .tagline {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 2px;
+        }
+
+        /* --- Typography --- */
+        .section-title { 
+            text-align: center; 
+            font-size: 2rem; 
+            color: var(--primary-maroon); 
+            margin-bottom: 8px; 
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .section-subtitle {
+            text-align: center; 
+            color: var(--text-muted); 
+            font-size: 1.05rem;
+            margin-bottom: 40px;
+        }
+
+        /* --- Hero Banner --- */
+        .hero-banner {
+            position: relative;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-md);
+            background-color: var(--dark-maroon);
+            height: 260px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hero-banner img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0.35; 
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            color: var(--white);
+            padding: 20px;
+        }
+        .hero-content h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.5px; }
+        .hero-content p { font-size: 1.15rem; font-weight: 300; opacity: 0.95; }
+
+        /* --- Module Grids --- */
+        .module-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 20px; 
+        }
+        
+        .module-card { 
+            appearance: none;
+            outline: none;
+            font-family: inherit;
+            width: 100%;
+            background: var(--white); 
+            border-radius: var(--radius-lg); 
+            padding: 30px 20px; 
+            text-align: center; 
+            box-shadow: var(--shadow-md); 
+            cursor: pointer; 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--primary-maroon), var(--gold));
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+        }
+        
+        .module-card:hover { 
+            transform: translateY(-6px); 
+            box-shadow: var(--shadow-lg); 
+            border-color: transparent;
+            text-decoration: none;
+        }
+        
+        .module-card:hover::before { opacity: 1; }
+        .module-card:active {
+            transform: translateY(-2px);
+            background-color: #fcfcfc;
+        }
+        
+        .module-card i { 
+            font-size: 2.2rem; 
+            background: linear-gradient(135deg, var(--primary-maroon), var(--image-red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px; 
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .module-card:hover i { 
+            transform: scale(1.1) translateY(-3px); 
+        }
+        
+        .module-card h2 { 
+            font-size: 1.15rem; 
+            color: var(--text-dark); 
+            font-weight: 500; 
+            letter-spacing: 0.3px; 
+        }
+
+        /* --- Custom Product Card --- */
+        .product-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); 
+            gap: 30px; 
+            justify-content: center;
+        }
+        .custom-product-card {
+            background: var(--white);
+            border-radius: 15px;
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            position: relative;
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none; 
+        }
+        .custom-product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+        
+        .custom-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--image-red);
+            color: var(--white);
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-bottom-left-radius: 20px;
+            z-index: 2;
+        }
+
+        .card-top-section {
+            background-color: var(--image-bg-pink);
+            padding: 50px 30px 40px;
+            text-align: left;
+        }
+        .card-top-section h2 {
+            font-size: 1.7rem;
+            color: #9e2a2b; 
+            line-height: 1.2;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        .card-top-section p {
+            font-size: 0.95rem;
+            color: #444;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        .card-bottom-section {
+            background-color: var(--white);
+            padding: 40px 30px 30px;
+            text-align: left;
+            flex: 1;
+        }
+        .card-bottom-section h4 {
+            font-size: 0.95rem;
+            color: #777;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .benefits-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 1rem;
+            color: #333;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        .benefits-list li i {
+            color: var(--image-red);
+            font-size: 1.3rem;
+            margin-top: 2px;
+        }
+
+        /* --- Claims & Support Components --- */
+        .claims-wrapper {
+            background-color: var(--primary-maroon);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 40px;
+        }
+        .claims-left {
+            padding: 40px;
+            color: var(--white);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .claims-left h2 { font-size: 2rem; margin-bottom: 15px; font-weight: 700; }
+        .claims-left p { font-size: 1rem; line-height: 1.6; margin-bottom: 30px; opacity: 0.95; }
+        
+        .claims-support-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .claims-stats {
+            background: var(--light-maroon);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            color: var(--primary-maroon);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: auto;
+        }
+        .stat-item { display: flex; align-items: center; gap: 20px; }
+        .stat-item strong { font-size: 1.8rem; font-weight: 700; min-width: 100px; }
+        .stat-item span { font-size: 0.9rem; font-weight: 500; line-height: 1.2; }
+
+        .claims-right {
+            background-color: var(--white);
+            margin: 15px;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .claims-right h3 { color: var(--primary-maroon); font-size: 1.3rem; margin-bottom: 20px; font-weight: 600; }
+        .claims-right ul { list-style: none; }
+        .claims-right li { 
+            position: relative; 
+            padding-left: 24px; 
+            margin-bottom: 16px; 
+            font-size: 0.95rem; 
+            color: var(--text-dark); 
+            line-height: 1.5;
+        }
+        .claims-right li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary-maroon);
+            font-size: 1.5rem;
+            line-height: 1;
+            top: -2px;
+        }
+
+        .office-card {
+            background-color: #4a1317; 
+            color: var(--white);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            box-shadow: var(--shadow-sm);
+            transition: transform var(--transition-speed);
+        }
+        .office-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .office-card i { font-size: 2rem; color: var(--gold); margin-top: 5px; }
+        .office-details h4 { font-size: 1.2rem; margin-bottom: 12px; font-weight: 600; }
+        .office-details p { font-size: 0.95rem; line-height: 1.6; opacity: 0.85; }
+        .office-details a { color: var(--gold); text-decoration: none; }
+        .office-details a:hover { text-decoration: underline; }
+
+        /* --- Downloads / Forms --- */
+        .card-container { 
+            background: var(--white); 
+            border-radius: var(--radius-lg); 
+            padding: 40px; 
+            box-shadow: var(--shadow-md); 
+            border: 1px solid var(--border-color);
+        }
+        .download-item { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 24px; background: var(--white); border: 1px solid var(--border-color); 
+            border-radius: var(--radius-md); margin-bottom: 16px; 
+            transition: all var(--transition-speed);
+        }
+        .download-item:hover { box-shadow: var(--shadow-sm); border-color: var(--primary-maroon); }
+        .download-info { display: flex; align-items: center; gap: 20px; }
+        .download-info i { font-size: 2.5rem; color: var(--primary-maroon); }
+        .download-info h4 { font-size: 1.15rem; color: var(--text-dark); font-weight: 600; margin-bottom: 4px; }
+        
+        .action-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn { 
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px; 
+            background-color: var(--primary-maroon); color: var(--white); 
+            border: none; border-radius: 50px; 
+            font-size: 1.05rem; font-weight: 600; cursor: pointer; 
+            text-decoration: none; transition: all 0.3s ease; 
+        }
+        .btn:hover { background-color: var(--dark-maroon); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(122, 31, 38, 0.35); }
+        
+        .btn-whatsapp { background-color: #25D366; box-shadow: 0 6px 20px rgba(37, 211, 102, 0.25); }
+        .btn-whatsapp:hover { background-color: #1ebe57; box-shadow: 0 8px 25px rgba(37, 211, 102, 0.35); }
+
+        /* --- Footer --- */
+        footer { 
+            background-color: var(--dark-maroon); color: rgba(255,255,255,0.8); 
+            text-align: center; padding: 24px; margin-top: auto; font-size: 0.9rem;
+        }
+
+        /* --- Media Queries --- */
+        @media (min-width: 992px) {
+            .claims-wrapper { flex-direction: row; }
+            .claims-right { margin: 20px; }
+        }
+        @media (max-width: 768px) {
+            .view-section { padding-top: 80px; }
+            .section-title { font-size: 1.7rem; }
+            .card-container { padding: 24px; }
+            .download-item { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .action-group { width: 100%; justify-content: flex-end; }
+            .claims-left { padding: 30px; }
+            .claims-right { padding: 30px; margin: 0; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+            .stat-item { flex-direction: column; align-items: flex-start; gap: 5px; }
+            .office-card { flex-direction: column; gap: 15px; }
+            .office-card i { font-size: 1.8rem; }
+            .hero-banner { height: 200px; }
+            .hero-content h1 { font-size: 2rem; }
+        }
+        
+        /* --- Print Optimization for One-Pagers --- */
+        @media print {
+            header, .action-group { display: none !important; }
+            .view-section { padding: 0; display: block !important; }
+            body { background-color: white; }
+            .module-card, .custom-product-card, .card-container { box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <button class="back-btn" id="backBtn" onclick="goBack()" aria-label="Go Back">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <a href="#" class="logo-container" onclick="navigateTo('view-home')">
+                <div class="logo">Sales Partner</div>
+                <div class="tagline">Empowering Your Growth</div>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <section id="view-home" class="view-section active">
+            
+            <div class="hero-banner">
+                <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80" loading="lazy" alt="Corporate Trust and Security">
+                <div class="hero-content">
+                    <h1>Welcome Partner</h1>
+                    <p>Empowering you to protect families and build futures.</p>
+                </div>
+            </div>
+            
+            <div class="module-grid">
+                <button class="module-card" onclick="navigateTo('view-product-select')">
+                    <i class="fa-solid fa-calculator"></i>
+                    <h2>Quick Quote</h2>
+                </button>
+                
+                <a href="https://rlifews.indusindnipponlife.com/trackproposal/" target="_blank" rel="noopener noreferrer" class="module-card">
+                    <i class="fa-solid fa-file-contract"></i>
+                    <h2>Proposal Tracker</h2>
+                </a>
+
+                <button class="module-card" onclick="navigateTo('view-weblinks')">
+                    <i class="fa-solid fa-link"></i>
+                    <h2>Web Links</h2>
+                </button>
+
+                <button class="module-card" onclick="navigateTo('view-forms')">
+                    <i class="fa-regular fa-file-lines"></i>
+                    <h2>Forms</h2>
+                </button>
+
+                <button class="module-card" onclick="navigateTo('view-claims')">
+                    <i class="fa-solid fa-hand-holding-medical"></i>
+                    <h2>Claims & Support</h2>
+                </button>
+            </div>
+        </section>
+
+        <section id="view-weblinks" class="view-section">
+            <h2 class="section-title">Quick Weblinks</h2>
+            <p class="section-subtitle">Access important customer service and payment portals</p>
+            
+            <div class="module-grid">
+                <a href="https://customer.reliancenipponlife.com/pdcSelflink/" target="_blank" rel="noopener noreferrer" class="module-card">
+                    <i class="fa-solid fa-credit-card"></i>
+                    <h2>Self Payment</h2>
+                </a>
+                
+                <a href="https://customer.reliancenipponlife.com/enach/" target="_blank" rel="noopener noreferrer" class="module-card">
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                    <h2>NACH Registration</h2>
+                </a>
+                
+                <a href="https://customer.indusindnipponlife.com/MyServices/paypremium-online.aspx?UTM_Source=Website&UTM_Medium=NA&UTM_Campaign=NA&_ga=2.145537213.825716248.1542086739-36342821.1539799707" target="_blank" rel="noopener noreferrer" class="module-card">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                    <h2>Renewal Payment</h2>
+                </a>
+            </div>
+        </section>
+
+        <section id="view-product-select" class="view-section">
+            <h2 class="section-title">Quick Quote</h2>
+            <p class="section-subtitle">Select a plan to generate a customized client quote</p>
+            
+            <div class="product-grid">
+                <a href="GAIN.html" class="custom-product-card">
+                    <div class="custom-badge">Guaranteed Income Every Year</div>
+                    
+                    <div class="card-top-section">
+                        <h2>INL Guaranteed<br>Advantage Income Plan</h2>
+                        <p>A plan that provides you a Guaranteed Income every year throughout the policy term—offering a reliable financial support.</p>
+                    </div>
+
+                    <div class="card-bottom-section">
+                        <h4>Key Benefits</h4>
+                        <ul class="benefits-list">
+                            <li>
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Income starts from 1st Year of policy term</span>
+                            </li>
+                            <li>
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Option to Get back 50% of your Annualised Premium</span>
+                            </li>
+                            <li>
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Lump-sum payout at maturity</span>
+                            </li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section id="view-forms" class="view-section">
+            <div class="card-container">
+                <h2 class="section-title">Forms Center</h2>
+                <p class="section-subtitle">Access and share essential forms and documents</p>
+                
+                <div class="download-item">
+                    <div class="download-info">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <div>
+                            <h4>NACH FORM</h4>
+                            <small style="color: var(--text-muted);">PDF Document</small>
+                        </div>
+                    </div>
+                    <div class="action-group">
+                        <button onclick="shareFileWhatsApp('nach-form.pdf', 'NACH FORM')" class="btn btn-whatsapp" style="padding: 12px 20px;" title="Share on WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </button>
+                        <a href="nach-form.pdf" class="btn" style="padding: 12px 20px;" download title="Download PDF">
+                            <i class="fa-solid fa-download"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="download-item">
+                    <div class="download-info">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <div>
+                            <h4>NRI Questionnaire</h4>
+                            <small style="color: var(--text-muted);">PDF Document</small>
+                        </div>
+                    </div>
+                    <div class="action-group">
+                        <button onclick="shareFileWhatsApp('nri-questionnaire.pdf', 'NRI Questionnaire')" class="btn btn-whatsapp" style="padding: 12px 20px;" title="Share on WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </button>
+                        <a href="nri-questionnaire.pdf" class="btn" style="padding: 12px 20px;" download title="Download PDF">
+                            <i class="fa-solid fa-download"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="download-item">
+                    <div class="download-info">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <div>
+                            <h4>Form 60</h4>
+                            <small style="color: var(--text-muted);">PDF Document</small>
+                        </div>
+                    </div>
+                    <div class="action-group">
+                        <button onclick="shareFileWhatsApp('form-60.pdf', 'Form 60')" class="btn btn-whatsapp" style="padding: 12px 20px;" title="Share on WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </button>
+                        <a href="form-60.pdf" class="btn" style="padding: 12px 20px;" download title="Download PDF">
+                            <i class="fa-solid fa-download"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="download-item">
+                    <div class="download-info">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <div>
+                            <h4>Customer Declaration Form (CDF)</h4>
+                            <small style="color: var(--text-muted);">PDF Document</small>
+                        </div>
+                    </div>
+                    <div class="action-group">
+                        <button onclick="shareFileWhatsApp('cdf-form.pdf', 'Customer Declaration Form')" class="btn btn-whatsapp" style="padding: 12px 20px;" title="Share on WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </button>
+                        <a href="cdf-form.pdf" class="btn" style="padding: 12px 20px;" download title="Download PDF">
+                            <i class="fa-solid fa-download"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="download-item">
+                    <div class="download-info">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <div>
+                            <h4>Declaration Cum Acknowledgement</h4>
+                            <small style="color: var(--text-muted);">PDF Document</small>
+                        </div>
+                    </div>
+                    <div class="action-group">
+                        <button onclick="shareFileWhatsApp('declaration-cum-acknowledgement.pdf', 'Declaration Cum Acknowledgement')" class="btn btn-whatsapp" style="padding: 12px 20px;" title="Share on WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </button>
+                        <a href="declaration-cum-acknowledgement.pdf" class="btn" style="padding: 12px 20px;" download title="Download PDF">
+                            <i class="fa-solid fa-download"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="view-claims" class="view-section">
+            <div class="claims-wrapper">
+                <div class="claims-left">
+                    <h2>Claims</h2>
+                    <p>At IndusInd Nippon Life Insurance, we understand this is a difficult time. That’s why we deliver compassionate, seamless claim settlements, backed by our 10-Day Guarantee&reg; for Death Claims.</p>
+                    
+                    <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=800&q=80" loading="lazy" alt="Customer Support Agent" class="claims-support-img">
+
+                    <div class="claims-stats">
+                        <div class="stat-item">
+                            <strong>98.98%</strong>
+                            <span>Claim Settlement<br>Ratio*</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>10 days</strong>
+                            <span>Service<br>Guarantee**</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="claims-right">
+                    <h3>You Can Register your claim easily:</h3>
+                    <ul>
+                        <li>Visit your nearest <strong>INLIC branch</strong> for in-person assistance.</li>
+                        <li>Email scanned documents at <a href="mailto:claims@indusindnipponlife.com">claims@indusindnipponlife.com</a>.</li>
+                        <li>Courier to: Claims Department, Office no. 701 & 702, 7th floor, Silver Metropolis, Off Western Express Highway, Goregaon East, Mumbai - 400063.</li>
+                        <li>In case of assistance, contact us on <a href="tel:18001023330">1800 102 3330</a> or email us on <a href="mailto:customerservice@indusindnipponlife.com">customerservice@indusindnipponlife.com</a>.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h2 class="section-title" style="font-size: 1.6rem; text-align: left; margin-top: 50px; margin-bottom: 20px;">Contact Information</h2>
+            
+            <div class="office-card">
+                <i class="fa-regular fa-building"></i>
+                <div class="office-details">
+                    <h4>Registered & Corporate Office</h4>
+                    <p>IndusInd Nippon Life Insurance Company Limited. Unit Nos. 401B, 402, 403 & 404, 4th Floor, Inspire-BKC, G Block, BKC Main Road, Bandra Kurla Complex, Bandra East, Mumbai - 400051. India.</p>
+                    <p style="margin-top: 10px;">T: <a href="tel:+912268965000">+91 22 6896 5000</a></p>
+                </div>
+            </div>
+
+            <div class="office-card">
+                <i class="fa-solid fa-earth-asia"></i>
+                <div class="office-details">
+                    <h4>UAE (Dubai Representative Office)</h4>
+                    <p>IndusInd Nippon Life Insurance Company Limited. AL Qassim Building (Al Rais), 1st Floor, Near Burjuman Metro Station, Dubai - UAE.</p>
+                    <p style="margin-top: 10px;">Landline: <a href="tel:+97143972100">+971 4397 2100</a></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Sales Partner Portal. IndusInd Nippon Life Insurance.</p>
+    </footer>
+
+    <script>
+        const viewHistory = ['view-home'];
+        
+        document.addEventListener('DOMContentLoaded', () => { 
+            navigateTo('view-home', false); 
+        });
+
+        function navigateTo(viewId, pushToHistory = true) {
+            const sections = document.querySelectorAll('.view-section');
+            sections.forEach(el => el.classList.remove('active'));
+            
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                targetView.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Accessibility: Shift focus to the new section's title
+                const viewTitle = targetView.querySelector('h2');
+                if (viewTitle) {
+                    viewTitle.setAttribute('tabindex', '-1');
+                    viewTitle.focus({ preventScroll: true });
+                }
+            }
+
+            const backBtn = document.getElementById('backBtn');
+            backBtn.style.display = (viewId === 'view-home') ? 'none' : 'block';
+            
+            if (pushToHistory && viewHistory[viewHistory.length - 1] !== viewId) {
+                viewHistory.push(viewId);
+            }
+        }
+
+        function goBack() { 
+            if (viewHistory.length > 1) {
+                viewHistory.pop(); 
+                const prevView = viewHistory[viewHistory.length - 1]; 
+                navigateTo(prevView, false); 
+            } else {
+                navigateTo('view-home'); 
+            }
+        }
+
+        async function shareFileWhatsApp(fileName, fileTitle) {
+            // The exact message format
+            const message = `Dear Sir/Madam,\n\nPlease find enclosed the *${fileTitle}* pertaining to your policy requirements.\n\nKindly complete the needful action.\n\nFor any queries, I am available to assist you.`;
+
+            // 1. Try the modern Web Share API (Works best on mobile devices)
+            if (navigator.canShare && navigator.share) {
+                try {
+                    // Fetch the file and convert it to a file object
+                    const response = await fetch(fileName);
+                    const blob = await response.blob();
+                    const file = new File([blob], fileName, { type: 'application/pdf' });
+
+                    // Check if the device allows sharing this file type
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: fileTitle,
+                            text: message
+                        });
+                        return; // Success! Exit the function.
+                    }
+                } catch (error) {
+                    console.log('Web Share API failed or was cancelled, falling back to link sharing.', error);
+                }
+            }
+
+            // 2. Fallback for Desktop Web or unsupported browsers
+            const fileUrl = new URL(fileName, window.location.href).href;
+            const fallbackMessage = `${message}\n\nDocument Link: ${fileUrl}`;
+            
+            window.open(`https://wa.me/?text=${encodeURIComponent(fallbackMessage)}`, '_blank');
+        }
+    </script>
+</body>
+</html>
