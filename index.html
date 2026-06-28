@@ -261,29 +261,31 @@
             letter-spacing: 0.3px; 
         }
 
-        /* --- Custom Product Card (Clean Title Format) --- */
+        /* --- Refined Custom Product Card --- */
         .product-grid {
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-            gap: 24px; 
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+            gap: 20px; 
             justify-content: center;
         }
+        
         .custom-product-card {
             background-color: var(--image-bg-pink);
-            border-radius: 15px;
+            border-radius: 12px;
             box-shadow: var(--shadow-md);
             cursor: pointer;
             position: relative;
             border: 1px solid var(--border-color);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s ease;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             text-decoration: none; 
-            min-height: 140px; 
-            outline: none; /* For accessibility focus */
+            min-height: 120px; 
+            outline: none; 
         }
-        .custom-product-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+        
+        .custom-product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
         .custom-product-card:active { transform: translateY(-2px); }
         
         .custom-badge {
@@ -291,26 +293,27 @@
             top: 0;
             right: 0;
             color: var(--white);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
-            padding: 8px 16px;
-            border-radius: 0 15px 0 20px; 
+            padding: 6px 12px;
+            border-radius: 0 12px 0 15px; 
             z-index: 2;
         }
 
         .card-top-section {
-            padding: 55px 25px 30px; 
+            padding: 40px 20px 25px; 
             text-align: left;
             flex: 1;
             display: flex;
             align-items: center; 
         }
+        
         .card-top-section h2 {
-            font-size: 1.55rem; 
+            font-size: 1.25rem; 
             color: var(--primary-maroon);
-            line-height: 1.25;
+            line-height: 1.3;
             margin: 0; 
-            font-weight: 700;
+            font-weight: 600; 
         }
 
         /* --- Claims & Support Components --- */
@@ -559,7 +562,7 @@
             <div class="product-grid">
                 <!-- Guaranteed Advantage Income Plan -->
                 <div onclick="openCalculator('GAIN.html')" class="custom-product-card" role="button" tabindex="0">
-                    <div class="custom-badge" style="background-color: var(--image-red);">Guaranteed Income Every Year</div>
+                    <div class="custom-badge" style="background-color: var(--image-red);">Guaranteed Income</div>
                     <div class="card-top-section">
                         <h2>INL Guaranteed<br>Advantage Income Plan</h2>
                     </div>
@@ -567,7 +570,7 @@
 
                 <!-- Nishchit Pension Plan -->
                 <div onclick="openCalculator('NishchitPension.html')" class="custom-product-card" role="button" tabindex="0">
-                    <div class="custom-badge" style="background-color: #bd3939;">Retire without worries</div>
+                    <div class="custom-badge" style="background-color: #bd3939;">Retire Worry-Free</div>
                     <div class="card-top-section">
                         <h2>INL Nishchit Pension</h2>
                     </div>
@@ -575,7 +578,7 @@
             </div>
         </section>
 
-        <!-- New Dedicated View for Rendering Calculators -->
+        <!-- Dynamic iframe View for Calculators -->
         <section id="view-calculator" class="view-section">
             <iframe id="calculatorFrame" title="Product Calculator"></iframe>
         </section>
@@ -781,7 +784,6 @@
             }
         }
 
-        // --- NEW CALCULATOR LOADER ---
         function openCalculator(fileUrl) {
             const frame = document.getElementById('calculatorFrame');
             // Check if it's already loaded to prevent unnecessary reloads, otherwise update src
